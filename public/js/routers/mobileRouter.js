@@ -2,28 +2,16 @@
 // =============
 
 // Includes file dependencies
-define([ "jquery","backbone", "../models/InspectionModel", "../collections/CategoriesCollection", "../views/ListView", "../views/HomeView" ], function( $, Backbone, CategoryModel, CategoriesCollection, ListView, HomeView ) {
+define([ "jquery","backbone", "../models/InspectionModel", "../collections/InspectionsCollection", "../views/ListView", "../views/HomeView", "parse" ], function( $, Backbone, CategoryModel, CategoriesCollection, ListView, HomeView, jqueryParse ) {
 
     // Extends Backbone.Router
-    var CategoryRouter = Backbone.Router.extend( {
+    return Backbone.Router.extend( {
 		latitude: undefined,
 		longitude: undefined,
-        // The Router constructor
+		
         initialize: function() {
 			this.locateUser();
-            // // Instantiates a new Animal Category View
-            //           this.animalsView = new CategoryView( { el: "#animals", collection: new CategoriesCollection( [] , { type: "animals" } ) } );
-            // 
-            //           // Instantiates a new Colors Category View
-            //           this.colorsView = new CategoryView( { el: "#colors", collection: new CategoriesCollection( [] , { type: "colors" } ) } );
-            // 
-            //           // Instantiates a new Vehicles Category View
-            //           this.vehiclesView = new CategoryView( { el: "#vehicles", collection: new CategoriesCollection( [] , { type: "vehicles" } ) } );
-
-			this.listView = new ListView({el: "#list",collection: new CategoriesCollection( [], { type: "vehicles" } )});
-            // Tells Backbone to start watching for hashchange events
-            Backbone.history.start();
-
+			Backbone.history.start();
         },
 
 		locateUser: function(){
@@ -34,7 +22,7 @@ define([ "jquery","backbone", "../models/InspectionModel", "../collections/Categ
 			that.longitude = data.coords.longitude;
 				console.log("latitude: ",data.coords.latitude);
 				console.log("longitude: ",data.coords.longitude);
-				that.homeView = new HomeView({el: "#home", lat: that.latitude, lng: that.longitude });
+				that.getInspections();
 				
 				
 			});
@@ -58,45 +46,43 @@ define([ "jquery","backbone", "../models/InspectionModel", "../collections/Categ
         home: function() {
 			console.log("homeview!");
             // Programatically changes to the categories page
-            //$.mobile.loading( "show" );
+			
             $.mobile.changePage( "#home" , { reverse: false, changeHash: false } );
 
         },
 
-        // Category method that passes in the type that is appended to the url hash
+		getInspections: function(){
+			var that = this;
+			console.log("lat",that.latitude);
+					Parse.initialize("YdUZbgh0cv3sNHoeScLz5WMwVSp1fpWAiW3UDiOt", "UFFrD0afUNAjkwjvlDxATRgyYlHUH5195IrLhCQB");
+					var Location = Parse.Object.extend("food_inspections");
+					var query = new Parse.Query(Location);
+					var point = new Parse.GeoPoint({latitude: that.latitude, longitude: that.longitude});
+					query.withinMiles("geopoint_location", point,Number(.3));
+					query.limit(500);
+						query.find({
+						  success: function(collection) {
+							that.collection = collection;
+							that.listView = new ListView({el: "#list",collection: that.collection});
+							that.homeView = new HomeView({el: "#home", lat: that.latitude, lng: that.longitude, collection: collection });
+							
+						  }
+						});	
+		},
+		
+		gotoDetailView: function(model){
+			alert(model);
+			
+		},
         page: function(type) {
-            // Stores the current Category View  inside of the currentView variable
             var currentView = this[ type + "View" ];
 			console.log("Current View: ",currentView);
-            // If there are no collections in the current Category View
-           // if(!currentView.collection.length) {
 
-                // Show's the jQuery Mobile loading icon
-                $.mobile.loading( "show" );
-
-                // Fetches the Collection of Category Models for the current Category View
-               // currentView.collection.fetch().done( function() {
-
-                    // Programatically changes to the current categories page
                     $.mobile.changePage( "#" + type, { reverse: false, changeHash: false } );
-    
-            //    } );
-
-         //   }
-
-            // If there already collections in the current Category View
-        //    else {
-
-                // Programatically changes to the current categories page
-          //     $.mobile.changePage( "#" + type, { reverse: false, changeHash: false } );
-
-         //   }
 
         }
 
     } );
 
-    // Returns the Router class
-    return CategoryRouter;
 
 } );

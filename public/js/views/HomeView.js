@@ -1,48 +1,47 @@
-// Home View
-// =============
-
-// Includes file dependencies
 define([ "jquery", "backbone", "handlebars", "text!views/templates/home.html", "maps", "parse" ], function( $, Backbone, Handlebars, template, maps, jqueryParse  ) {
 
-    // Extends Backbone.View
     return Backbone.View.extend( {
-        // The View Constructor
         initialize: function(options) {
-				console.log(options);
 				var params = {
 					lat: options.lat,
 					lng:  options.lng
 					
 				}
-		
-            // The render method is called when Category Models are added to the Collection
-            //this.collection.on( "added", this.render, this );
-			this.render(params);
+		this.collection = options.collection;
+
+		this.render(params);
         },
 
-		getInspections : function(params){
-			var results;
-				Parse.initialize("YdUZbgh0cv3sNHoeScLz5WMwVSp1fpWAiW3UDiOt", "UFFrD0afUNAjkwjvlDxATRgyYlHUH5195IrLhCQB");
-				var Location = Parse.Object.extend("food_inspections");
-				var query = new Parse.Query(Location);
-				var point = new Parse.GeoPoint({latitude: params.lat, longitude: params.lng});
-				query.withinMiles("geopoint_location", point,Number(.2));
-				query.limit(500);
-					query.find({
-					  success: function(collection) {
-						collection.forEach(function(object) {
+		getInspections : function(){
+
+						this.collection.forEach(function(object) {
 							var position = object.get('Latitude') + "," + object.get('Longitude');
+							var results = object.get('Results');
+							var content =  object.get("akaName") + "<br>" + object.get('Address') + "<br> " + results;
 							
-							$('#map_canvas').gmap('addMarker', {'position': position, 'bounds': true}).click(function() {
-								$('#map_canvas').gmap('openInfoWindow', {'content': object.get('Address')}, this);
-							});
+							
+							if(results === "Pass" ||  results === "Pass w/ Conditions"){
+									$('#map_canvas').gmap('addMarker', {'icon':'images/smiley_happy.png','position': position, 'bounds': true}).click(function() {
+										$('#map_canvas').gmap('openInfoWindow', {'content': content}, this);
+									});	
+							} else if(results === "Fail") {
+									$('#map_canvas').gmap('addMarker', {'icon':'images/smiley_sad.png','position': position, 'bounds': true}).click(function() {
+										$('#map_canvas').gmap('openInfoWindow', {'content': content}, this);
+									});	
+							} else {
+									$('#map_canvas').gmap('addMarker', {'icon':'images/smiley_neutral.png','position': position, 'bounds': true}).click(function() {
+										$('#map_canvas').gmap('openInfoWindow', {'content': content}, this);
+									});
+							}
+						
 						});
-					  }
-					});
+			$.mobile.hidePageLoadingMsg();
 				
 		},
 
 		setMapWithPosition : function(params){
+			$.mobile.loading( "show" );
+            
 			var position = params.lat + "," + params.lng;
 			
             $('#map_canvas').gmap().bind('init', function(ev, map) {
@@ -53,14 +52,10 @@ define([ "jquery", "backbone", "handlebars", "text!views/templates/home.html", "
 	            $('#map_canvas').gmap('option', 'zoom', 17);
 				
 			});
-			
-			console.log(this.getInspections(params));
+			this.getInspections();
 		},
 
-        // Renders all of the Category models on the UI
-        render: function(params) {
-			console.log("homeview.render");
-	
+        render: function(params) {	
 			var compiledTemplate = Handlebars.compile(template);
 			var html    = compiledTemplate(params);
 			$("#homeView",this.el).html(html);

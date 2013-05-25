@@ -2,31 +2,24 @@
 // =============
 
 // Includes file dependencies
-define([ "jquery", "backbone","models/InspectionModel" ], function( $, Backbone, CategoryModel ) {
+define([ "jquery", "backbone","models/InspectionModel","text!views/templates/details.html", "handlebars", "views/ListRowView" ], function( $, Backbone, CategoryModel, template, Handlebars, rowView ) {
 
     // Extends Backbone.View
     return Backbone.View.extend( {
 
         // The View Constructor
-        initialize: function() {
-			
-            // The render method is called when Category Models are added to the Collection
-            this.collection.on( "added", this.render, this );
-
+        initialize: function() {			
+          	this.render();
         },
 
-        // Renders all of the Category models on the UI
         render: function() {
-
-            // Sets the view's template property
-            this.template = _.template( $( "script#inspectionItems" ).html(), { "collection": this.collection } );
-
-            // Renders the view's template inside of the current listview element
-           // this.$el.find("ul").html(this.template);
-			$("#listView",this.el).html(this.template);
+			_.each(this.collection, function(row){
+				var rowV = new rowView({model: row});
+				this.$("#listView").append(rowV.render().el);
+		      
+			});
             // Maintains chainability
             return this;
-
         }
 
     } );

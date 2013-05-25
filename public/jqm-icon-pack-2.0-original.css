@@ -11,8 +11,18 @@
 	    padding: 0;
 	    margin: 0;
 	    width: 100%; /* this isn't really necessary, but let's be clear */
-	    height: 400px; /* this will be set dynamically later */
+	    height: 500px; /* this will be set dynamically later */
 
+}
+
+.pass{
+	border-left: 20px solid #0f0;
+  
+}
+
+.fail{
+	border-left:20px solid #f00;
+  
 }
 .ui-icon,
 .ui-icon-searchfield:after {

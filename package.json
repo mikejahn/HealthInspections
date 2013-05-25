@@ -2,5 +2,14 @@
   "dependencies": {
     "express": "3.x"
   },
-  "main": "./server/server"
+  "main": "./server/server",
+  "name": "chicagoHealthInspections",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "version": "0.0.1-2",
+  "engines": {
+    "node": "0.8.x"
+  },
+  "subdomain": "chicagoHealth"
 }
